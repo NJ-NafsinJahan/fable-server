@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 const app = express();
@@ -28,33 +28,85 @@ async function run() {
     // await client.connect();
     // Send a ping to confirm a successful connection
     //! ***** database create
+    // main db
     const db = client.db("fableDB");
-    const writerCollection = client.db("writers");
-    const ebooksCollection = client.db("ebooks");
-    const bookingCollection = client.db("bookings");
-    const paymentCollection = client.db("payments");
-    const bookmarkCollection = client.db("bookmarks");
+
+    // other db collections
+    const writerCollection = db.collection("writers");
+    const ebooksCollection = db.collection("ebooks");
+    const bookingCollection = db.collection("bookings");
+    const paymentCollection = db.collection("payments");
+    const bookmarkCollection = db.collection("bookmarks");
 
     // ********
-    // POST API for writer-profile
-    app.post("/api/writer-profile", async (req, res) => {
-      const { writerName, image, website, bio, writerEmail } = req.body;
 
-      const addData = {
-        writerName,
-        image,
-        website,
-        bio,
-        writerEmail,
-        createdAt: new Date(),
-        status: "active",
-      };
-
-      const result = await writerCollection.insertOne(addData);
-      res.json(result);
+    //  Create Get API for writer
+    app.get("/api/writer-profile/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await writerCollection.findOne({
+        writerEmail: email,
+      });
+      res.send(result);
     });
 
-    // ! ******    *******      ******
+    // POST API for writer-profile
+    app.post("/api/writer-profile", async (req, res) => {
+      try {
+        const { writerName, image, website, bio, writerEmail } = req.body;
+
+        const addData = {
+          writerName,
+          image,
+          website,
+          bio,
+          writerEmail,
+          createdAt: new Date(),
+          status: "active",
+        };
+
+        const result = await writerCollection.insertOne(addData);
+        console.log("Writer inserted successfully:", result);
+
+        res.status(201).json({ success: true, result });
+      } catch (error) {
+        console.error("Error inside POST API:", error);
+        res.status(500).json({ success: false, message: error.message });
+      }
+    });
+
+    // PATCH API for update writer-profile
+    app.patch("/api/writer-profile/:id", async (req, res) => {
+      try {
+        // const { id } = req.params.id;
+        const { id } = req.params;
+        const { writerName, image, website, bio, writerEmail } = req.body;
+
+        const updateData = {
+          writerName,
+          image,
+          website,
+          bio,
+          writerEmail,
+          createdAt: new Date(),
+          status: "active",
+        };
+
+        const result = await writerCollection.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $set: updateData,
+          },
+        );
+        console.log("Writer inserted successfully:", result);
+
+        res.status(201).json({ success: true, result });
+      } catch (error) {
+        console.error("Error inside POST API:", error);
+        res.status(500).json({ success: false, message: error.message });
+      }
+    });
+
+    // ! ******  Pinged  *******  Pinged    ******
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
