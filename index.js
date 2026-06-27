@@ -106,6 +106,8 @@ async function run() {
       }
     });
 
+    // *** api/ebooks routes
+
     // POST API for Add ebook
     app.post("/api/ebooks", async (req, res) => {
       try {
@@ -120,6 +122,18 @@ async function run() {
         console.error("Error inside POST API:", error);
         res.status(500).json({ success: false, message: error.message });
       }
+    });
+
+    //  Create Get API for ebook manage
+    app.get("/api/ebooks/:email", async (req, res) => {
+      const { email } = req.params;
+      console.log(email);
+      const result = await ebooksCollection
+        .find({
+          writerEmail: email,
+        })
+        .toArray();
+      res.send(result);
     });
 
     // ! ******  Pinged  *******  Pinged    ******
