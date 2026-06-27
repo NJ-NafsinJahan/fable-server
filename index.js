@@ -106,6 +106,22 @@ async function run() {
       }
     });
 
+    // POST API for Add ebook
+    app.post("/api/ebooks", async (req, res) => {
+      try {
+        const data = req.body;
+        const result = await ebooksCollection.insertOne({
+          ...data,
+        });
+        console.log("Book added successfully:", result);
+
+        res.status(201).json({ success: true, result });
+      } catch (error) {
+        console.error("Error inside POST API:", error);
+        res.status(500).json({ success: false, message: error.message });
+      }
+    });
+
     // ! ******  Pinged  *******  Pinged    ******
     await client.db("admin").command({ ping: 1 });
     console.log(
