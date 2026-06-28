@@ -108,6 +108,13 @@ async function run() {
 
     // *** api/ebooks routes
 
+    // GET API for brows ebook
+    app.get("/api/ebooks", async (req, res) => {
+      const result = await ebooksCollection.find().toArray();
+      console.log(result, "all ebooks");
+      res.json(result);
+    });
+
     // POST API for Add ebook
     app.post("/api/ebooks", async (req, res) => {
       try {
