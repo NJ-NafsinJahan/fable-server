@@ -111,7 +111,14 @@ async function run() {
     // GET API for brows ebook
     app.get("/api/ebooks", async (req, res) => {
       const result = await ebooksCollection.find().toArray();
-      console.log(result, "all ebooks");
+      //   console.log(result, "all ebooks");
+      res.json(result);
+    });
+
+    // GET API for ebook details
+    app.get("/api/ebooks/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await ebooksCollection.findOne({ _id: new ObjectId(id) });
       res.json(result);
     });
 
