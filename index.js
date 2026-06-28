@@ -124,6 +124,28 @@ async function run() {
       }
     });
 
+    // PATCH API for update ebook
+    app.patch("/api/ebooks/:id", async (req, res) => {
+      try {
+        // const { id } = req.params.id;
+        const { id } = req.params;
+        const updateData = req.body;
+
+        const result = await ebooksCollection.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $set: updateData,
+          },
+        );
+        console.log("book inserted successfully:", result);
+
+        res.status(201).json({ success: true, result });
+      } catch (error) {
+        console.error("Error inside POST API:", error);
+        res.status(500).json({ success: false, message: error.message });
+      }
+    });
+
     //  Create Get API for ebook manage
     app.get("/api/ebooks/:email", async (req, res) => {
       const { email } = req.params;
