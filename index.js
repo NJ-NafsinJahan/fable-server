@@ -146,6 +146,15 @@ async function run() {
       }
     });
 
+    // DELETE API for delete ebook
+    app.delete("/api/ebooks/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await ebooksCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+      res.send(result);
+    });
+
     //  Create Get API for ebook manage
     app.get("/api/ebooks/:email", async (req, res) => {
       const { email } = req.params;
