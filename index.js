@@ -37,6 +37,7 @@ async function run() {
     const bookingCollection = db.collection("bookings");
     const paymentCollection = db.collection("payments");
     const bookmarkCollection = db.collection("bookmarks");
+    const usersCollection = db.collection("users");
 
     // ********
 
@@ -128,6 +129,7 @@ async function run() {
         const data = req.body;
         const result = await ebooksCollection.insertOne({
           ...data,
+          status: "Unpublished",
         });
         console.log("Book added successfully:", result);
 
@@ -170,7 +172,7 @@ async function run() {
     });
 
     //  Create Get API for ebook manage
-    app.get("/api/ebooks/:email", async (req, res) => {
+    app.get("/api/ebooks/my/:email", async (req, res) => {
       const { email } = req.params;
       console.log(email);
       const result = await ebooksCollection
