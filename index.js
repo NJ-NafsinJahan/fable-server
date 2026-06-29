@@ -220,6 +220,45 @@ async function run() {
       res.send(result);
     });
 
+    // PATCH API for upgrade premium
+    app.patch("/api/users/upgrade-premium/:email", async (req, res) => {
+      try {
+        const { email } = req.params;
+        const { amount, transactionId, paymentStatus, paymentType } = req.body;
+        const result = await usersCollection.updateOne(
+          { email },
+          {
+            $set: {
+              isPremium: true,
+            },
+          },
+        );
+        const paymentData = {
+          userEmail: email,
+          amount: amount || 49.0,
+          transactionId: transactionId || "N/A",
+          paymentStatus: paymentStatus || "succeeded",
+          paymentType: paymentType || "subscription",
+          paidAt: new Date(),
+        };
+
+        const paymentResult = await paymentCollection.insertOne(paymentData);
+
+        return res.status(200).json({
+          success: true,
+          message: "User upgraded to premium successfully.",
+          result,
+          paymentResult,
+        });
+      } catch (error) {
+        console.error("Backend Error:", error);
+        return res.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+    });
+
     // ! ******  Pinged  *******  Pinged    ******
     await client.db("admin").command({ ping: 1 });
     console.log(
