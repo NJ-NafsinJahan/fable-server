@@ -135,9 +135,17 @@ async function run() {
         sortObj.price = -1;
       }
 
+      //   db.ebooks.find().sort({
+      //     price: 1,
+      //   });
+      //   db.ebooks.find().sort({
+      //     price: -1,
+      //   });
+
       //8888888
       const result = await ebooksCollection
         .find(query)
+        // .sort({ price: -1 })
         .sort(sortObj)
         .collation({ locale: "en_US", numericOrdering: true })
         .toArray();
