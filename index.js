@@ -109,9 +109,38 @@ async function run() {
 
     // *** api/ebooks routes
 
-    // GET API for brows ebook
+    // GET API for brows ebook || search & filter
     app.get("/api/ebooks", async (req, res) => {
-      const result = await ebooksCollection.find().toArray();
+      // for search filter
+      const search = req.query.search;
+      const category = req.query.category;
+      const sort = req.query.sort;
+      const query = {};
+      if (search) {
+        query.title = {
+          $regex: search,
+          $options: "i",
+        };
+      }
+      if (category) {
+        query.category = category;
+        // query.category = {$in:category.split(",")}
+      }
+      //   8888 price sort
+      let sortObj = {};
+
+      if (sort === "low-to-high") {
+        sortObj.price = 1;
+      } else if (sort === "high-to-low") {
+        sortObj.price = -1;
+      }
+
+      //8888888
+      const result = await ebooksCollection
+        .find(query)
+        .sort(sortObj)
+        .collation({ locale: "en_US", numericOrdering: true })
+        .toArray();
       //   console.log(result, "all ebooks");
       res.json(result);
     });
