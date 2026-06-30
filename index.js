@@ -111,46 +111,64 @@ async function run() {
 
     // GET API for brows ebook || search & filter
     app.get("/api/ebooks", async (req, res) => {
-      // for search filter
-      const search = req.query.search;
-      const category = req.query.category;
-      const sort = req.query.sort;
-      const query = {};
-      if (search) {
-        query.title = {
-          $regex: search,
-          $options: "i",
-        };
-      }
-      if (category) {
-        query.category = category;
-        // query.category = {$in:category.split(",")}
-      }
-      //   8888 price sort
-      let sortObj = {};
+      try {
+        // query parameters ar jnn
+        const search = req.query.search;
+        const category = req.query.category;
+        const sort = req.query.sort;
 
-      if (sort === "low-to-high") {
-        sortObj.price = 1;
-      } else if (sort === "high-to-low") {
-        sortObj.price = -1;
+        // Pagination
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 8;
+        const skip = (page - 1) * limit;
+
+        // Filter Query Build
+        const query = {};
+
+        if (search) {
+          query.title = {
+            $regex: search,
+            $options: "i", // case-insensitive search
+          };
+        }
+
+        if (category) {
+          query.category = { $regex: `^${category}$`, $options: "i" };
+        }
+
+        // Sorting korar jonno
+        let sortObj = {};
+        if (sort === "low-to-high") {
+          sortObj.price = 1;
+        } else if (sort === "high-to-low") {
+          sortObj.price = -1;
+        }
+
+        const result = await ebooksCollection
+          .find(query)
+          .skip(skip)
+          .limit(limit)
+          .sort(sortObj)
+          .collation({ locale: "en_US", numericOrdering: true })
+          .toArray();
+
+        // Total page count , Pagination
+        const totalEbooks = await ebooksCollection.countDocuments(query);
+        const totalPages = Math.ceil(totalEbooks / limit);
+
+        res.json({
+          success: true,
+          ebooks: result,
+          page,
+          totalPages,
+          totalEbooks,
+        });
+      } catch (error) {
+        console.error("Error fetching ebooks:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal Server Error" });
       }
-
-      //   db.ebooks.find().sort({
-      //     price: 1,
-      //   });
-      //   db.ebooks.find().sort({
-      //     price: -1,
-      //   });
-
-      //8888888
-      const result = await ebooksCollection
-        .find(query)
-        // .sort({ price: -1 })
-        .sort(sortObj)
-        .collation({ locale: "en_US", numericOrdering: true })
-        .toArray();
-      //   console.log(result, "all ebooks");
-      res.json(result);
     });
 
     // GET API for ebook details
