@@ -160,6 +160,12 @@ async function run() {
       res.json(result);
     });
 
+    // GET API for Featured Ebooks
+    app.get("/api/featured", async (req, res) => {
+      const result = await ebooksCollection.find().limit(6).toArray();
+      res.json(result);
+    });
+
     // POST API for Add ebook
     app.post("/api/ebooks", async (req, res) => {
       try {
