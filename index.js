@@ -259,8 +259,61 @@ async function run() {
       }
     });
 
+    // api for bookmark
+    // Post api
+    app.post("/api/bookmarks", async (req, res) => {
+      try {
+        const { userEmail, bookId, title, coverImage, price } = req.body;
+        console.log("Front-end input data:", req.body);
+
+        if (!userEmail || !bookId) {
+          return res
+            .status(400)
+            .json({ error: "User email and Book ID are required" });
+        }
+
+        const existingBookmark = await bookmarkCollection.findOne({
+          userEmail,
+          bookId,
+        });
+        if (existingBookmark) {
+          return res.status(400).json({ error: "Already Bookmarked!" });
+        }
+
+        const newBookmark = {
+          userEmail,
+          bookId,
+          title,
+          coverImage,
+          price,
+          bookmarkedAt: new Date(),
+        };
+
+        const result = await bookmarkCollection.insertOne(newBookmark);
+        res
+          .status(201)
+          .json({ message: "Bookmark added successfully", result });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // GET API for bookmarks
+    app.get("/api/bookmarks/:email", async (req, res) => {
+      try {
+        const { email } = req.params;
+
+        const bookmarks = await bookmarkCollection
+          .find({ userEmail: email })
+          .toArray();
+        res.status(200).json(bookmarks);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
     // ! ******  Pinged  *******  Pinged    ******
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
